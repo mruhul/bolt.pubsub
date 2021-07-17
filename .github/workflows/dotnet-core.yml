@@ -28,6 +28,6 @@ jobs:
       - name: Test
         run: dotnet test ./${{ env.PROJECT_NAME }}.sln --no-restore --verbosity normal
       - name: Pack
-        run: dotnet pack ./${{ env.PROJECT_NAME }}.sln -c Release --no-build --output ../nupkgs
+        run: dotnet pack ./${{ env.PROJECT_NAME }}.sln -c Release --no-build --no-restore --output ../nupkgs
       - name: Publish
         run: dotnet nuget push ../nupkgs/**.nupkg -s https://www.nuget.org/api/v2/package/ -k ${{ secrets.nugetkey }} --skip-duplicate
