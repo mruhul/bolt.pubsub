@@ -18,7 +18,7 @@ namespace Bolt.PubSub.RabbitMq.Publishers
 
         public Publisher(IRabbitMqPublisher publisherWrapper,
             IRabbitMqSettings settings,
-            IEnumerable<IMessageFilter> filters,
+            IEnumerable<IMessageFilter> filters,         
             IEnumerable<IMessageSerializer> serializers,
             IUniqueId uniqueId,
             ISystemClock clock,
@@ -36,6 +36,9 @@ namespace Bolt.PubSub.RabbitMq.Publishers
 
         public Task<Guid> Publish<T>(Message<T> msg)
         {
+            if (settings.ExchangeName.IsEmpty()) 
+                throw new Exception("Exchange name cannot be empty. Make sure you provide an exchange name in settings.");
+
             var msgId = msg.Id ?? uniqueId.New();
 
             using var _ = logger.BeginScope("{msgId}", msgId);
@@ -54,7 +57,7 @@ namespace Bolt.PubSub.RabbitMq.Publishers
             }
 
             var appId = msg.AppId.EmptyAlternative(settings.AppId.EmptyAlternative("na"));
-            var msgType = msg.Type.EmptyAlternative($"{settings.MessageTypePrefix}{typeof(T).Name}");
+            var msgType = MessageTypeNameProvider.Get<T>();
             var contentType = settings.ContentType.EmptyAlternative(ContentTypeNames.Json);
             var correlationId = msg.CorrelationId.IsEmpty() ? uniqueId.New().ToString() : msg.CorrelationId;
             var version = msg.Version == 0 ? "1" : msg.Version.ToString();

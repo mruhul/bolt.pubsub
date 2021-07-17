@@ -22,20 +22,20 @@ namespace Bolt.PubSub.RabbitMq
         {
             if (settings == null) throw new ArgumentException($"{nameof(settings)} cannot be null.");
             if (settings.ConnectionString.IsEmpty()) throw new ArgumentException($"{nameof(settings.ConnectionString)} cannot be null or empty.");
-            if (settings.ExchangeName.IsEmpty()) throw new ArgumentNullException($"{nameof(settings.ExchangeName)} cannot be null or empty.");
 
             logger.LogTrace("Start creating rabbitmq connection.");
 
             var connectionFactory = new ConnectionFactory
             {
-                Uri = new Uri(settings.ConnectionString)
+                Uri = new Uri(settings.ConnectionString),
+                DispatchConsumersAsync = true
             };
 
             var con = connectionFactory.CreateConnection();
 
             logger.LogTrace("Rabbitmq connection created successfully.");
 
-            if (settings.SkipCreateExchange is true) return con;
+            if (settings.SkipCreateExchange is true || settings.ExchangeName.IsEmpty()) return con;
 
             var exchangeType = settings.ExchangeType.EmptyAlternative("headers");
 

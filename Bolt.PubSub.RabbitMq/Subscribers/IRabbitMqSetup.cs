@@ -17,5 +17,6 @@ namespace Bolt.PubSub.RabbitMq.Subscribers
         public int ProcessCount { get; init; }
         public int? PrefetchCount { get; init; }
         public int RequeueDelayInMs { get; set; }
+        public string ImplicitHeaderPrefix { get; set; }
     }
 }

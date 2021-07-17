@@ -1,16 +1,19 @@
 ﻿using System.Collections.Generic;
+using Microsoft.Extensions.Logging;
 
 namespace Bolt.PubSub.RabbitMq.Subscribers
 {
     internal sealed class SimpleRabbitMqSetup : IRabbitMqSetup
     {
         private readonly RabbitMqConnection connection;
+        private readonly ILogger<SimpleRabbitMqSetup> logger;
         private readonly Dictionary<string, string> exchanges = new Dictionary<string, string>();
         private readonly Dictionary<string, string> queues = new Dictionary<string, string>();
 
-        public SimpleRabbitMqSetup(RabbitMqConnection connection)
+        public SimpleRabbitMqSetup(RabbitMqConnection connection, ILogger<SimpleRabbitMqSetup> logger)
         {
             this.connection = connection;
+            this.logger = logger;
         }
 
         public bool IsApplicable(SubscriberSettings subscriberSettings)
@@ -30,6 +33,17 @@ namespace Bolt.PubSub.RabbitMq.Subscribers
 
             foreach (var setting in subscriberSettings.Settings)
             {
+                if (setting.ExchangeName.IsEmpty())
+                {
+                    logger.LogError("Exchange name is empty for subscriber settings. So ignoring this invalid settings.");
+                    continue;
+                }
+                if(setting.QueueName.IsEmpty())
+                {
+                    logger.LogError("Queue name is empty for subscriber settings. So ignoring this invalid settings.");
+                    continue;
+                }
+
                 var bindings = new Dictionary<string, object>();
                 if (setting.Bindings != null)
                 {
@@ -62,7 +76,7 @@ namespace Bolt.PubSub.RabbitMq.Subscribers
                     errorExchange = $"{setting.ExchangeName}.DX";
                     var errorQueue = $"{setting.QueueName}.DQ";
 
-                    channel.ExchangeDeclare(errorExchange, "direct", true, false, null);
+                    channel.ExchangeDeclare(errorExchange, "fanout", true, false, null);
                     channel.QueueDeclare(errorQueue, true, false, false, null);
                     channel.QueueBind(errorQueue, errorExchange, string.Empty, null);                    
                 }
@@ -75,6 +89,7 @@ namespace Bolt.PubSub.RabbitMq.Subscribers
                     ProcessCount = processCount,
                     PrefetchCount = setting.PrefetchCount,
                     RequeueDelayInMs = setting.RequeueDelayInMs,
+                    ImplicitHeaderPrefix = setting.ImplicitHeaderPrefix
                 });
             }
 

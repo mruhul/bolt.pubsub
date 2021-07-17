@@ -27,7 +27,12 @@ namespace Bolt.PubSub.RabbitMq.Tests
                 clock.UtcNow.Returns(new DateTime(2021,01,01, 0, 0, 0, DateTimeKind.Utc));
                 return clock;
             });
-            sc.AddScoped(c => Substitute.For<IRabbitMqSettings>());
+            sc.AddScoped(c =>
+            {
+                var fake = Substitute.For<IRabbitMqSettings>();
+                fake.ExchangeName.Returns("FakeExchange");
+                return fake;
+            });
             sc.AddScoped(c => Substitute.For<IRabbitMqPublisher>());
             sc.AddScoped(c => Substitute.For<IUniqueId>());
 

@@ -2,24 +2,22 @@
 using RabbitMQ.Client.Events;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Bolt.PubSub.RabbitMq.Subscribers
 {
     internal sealed class MessageReader
     {
-        public Message Read(BasicDeliverEventArgs evnt)
+        public Message Read(BasicDeliverEventArgs evnt, QueueSettings settings)
         {
             return new Message
             {
-                AppId = evnt.BasicProperties.TryReadHeader(HeaderNames.AppId),
+                AppId = evnt.BasicProperties.TryReadHeader($"{settings.ImplicitHeaderPrefix}{HeaderNames.AppId}"),
                 CorrelationId = evnt.BasicProperties.CorrelationId,
-                CreatedAt = evnt.BasicProperties.TryReadHeader(HeaderNames.CreatedAt).TryParseUtcFormat(),
+                CreatedAt = evnt.BasicProperties.TryReadHeader($"{settings.ImplicitHeaderPrefix}{HeaderNames.CreatedAt}").TryParseUtcFormat(),
                 Id = Guid.TryParse(evnt.BasicProperties.MessageId, out var result) ? result : null,
-                Tenant = evnt.BasicProperties.TryReadHeader(HeaderNames.Tenant),
-                Type = evnt.BasicProperties.TryReadHeader(HeaderNames.MessageType),
-                Version = evnt.BasicProperties.TryReadHeader(HeaderNames.Version).ToInt() ?? 1,
+                Tenant = evnt.BasicProperties.TryReadHeader($"{settings.ImplicitHeaderPrefix}{HeaderNames.Tenant}"),
+                Type = evnt.BasicProperties.TryReadHeader($"{settings.ImplicitHeaderPrefix}{HeaderNames.MessageType}"),
+                Version = evnt.BasicProperties.TryReadHeader($"{settings.ImplicitHeaderPrefix}{HeaderNames.Version}").ToInt() ?? 1,
                 Headers = ToHeaders(evnt.BasicProperties),
             };
         }

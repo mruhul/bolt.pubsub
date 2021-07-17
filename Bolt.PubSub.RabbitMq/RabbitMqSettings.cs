@@ -28,11 +28,6 @@
         string ContentType { get; }
 
         /// <summary>
-        /// Prefix will be add with message type for [blt-msg-type] header if defined.
-        /// </summary>
-        string MessageTypePrefix { get; }
-
-        /// <summary>
         /// If you like to set default expiry for all messages
         /// </summary>
         int? DefaultTTLInSeconds { get; }
@@ -74,11 +69,6 @@
         /// Set the default content type of message. default is [application/json]
         /// </summary>
         public string ContentType { get; set; } = ContentTypeNames.Json;
-
-        /// <summary>
-        /// Prefix will be prepend with message type for [blt-msg-type] header if defined.
-        /// </summary>
-        public string MessageTypePrefix { get; set; }
 
         /// <summary>
         /// If you like to set default expiry for all messages

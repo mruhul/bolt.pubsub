@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
@@ -105,7 +105,6 @@ namespace Bolt.PubSub.RabbitMq.Tests
             fake.ExchangeName.Returns(settings.ExchangeName);
             fake.ExchangeType.Returns(settings.ExchangeType);
             fake.ImplicitHeaderPrefix.Returns(settings.ImplicitHeaderPrefix);
-            fake.MessageTypePrefix.Returns(settings.MessageTypePrefix);
             fake.SkipCreateExchange.Returns(settings.SkipCreateExchange);
 
             return fake;
@@ -118,6 +117,10 @@ namespace Bolt.PubSub.RabbitMq.Tests
                 // minimalistic settings and message
                 new PublishTestData
                 {
+                    GivenSettings = new RabbitMqSettings
+                    {
+                        ExchangeName = "api-order-x"
+                    },
                     GivenUniqueId = Guid.Parse("654bbccd-f30e-4502-9c61-2b11578988db"),
                     MessageToBePublished = new Message<SampleEvent>
                     {
@@ -135,6 +138,7 @@ namespace Bolt.PubSub.RabbitMq.Tests
                     ExpectedCorrelationId = null,
                     ExpectedRoutingKey = "na.SampleEvent.1",
                     ExpectedDeliveryMode = 2,
+                    ExpectedExchangeName = "api-order-x",
                     ExpectedHeaders = new Dictionary<string, string>
                     {
                         ["blt-app-id"] = "na",
@@ -156,7 +160,6 @@ namespace Bolt.PubSub.RabbitMq.Tests
                         ExchangeName = "api-order-x",
                         AppId = "api-order",
                         DefaultTTLInSeconds = 60,
-                        MessageTypePrefix = "Events."
                     },
                     GivenUniqueId = Guid.Parse("654bbccd-f30e-4502-9c61-2b11578988db"),
                     MessageToBePublished = new Message<SampleEvent>
@@ -174,16 +177,16 @@ namespace Bolt.PubSub.RabbitMq.Tests
                     },
                     ExpectedContentType = "application/json",
                     ExpectedCorrelationId = null,
-                    ExpectedRoutingKey = "api-order.Events.SampleEvent.2",
+                    ExpectedRoutingKey = "api-order.SampleEvent.2",
                     ExpectedDeliveryMode = 2,
                     ExpectedExchangeName = "api-order-x",
                     ExpectedExpriryInSeconds = 60,
                     ExpectedHeaders = new Dictionary<string, string>
                     {
                         ["b-app-id"] = "api-order",
-                        ["b-msg-type"] = "Events.SampleEvent",
+                        ["b-msg-type"] = "SampleEvent",
                         ["b-msg-version"] = "2",
-                        ["Events.SampleEvent"] = "1",
+                        ["SampleEvent"] = "1",
                         ["b-published-at"] = "2021-01-01T00:00:00.0000000Z"
                     }
                 }

@@ -82,9 +82,10 @@ namespace Bolt.PubSub.RabbitMq.Subscribers
                 return;
             }
 
-            var msg = messageReader.Read(evnt);
+            var msg = messageReader.Read(evnt, queueSettings);
 
             var handlers = scope.ServiceProvider.GetServices<IMessageHandler>();
+
             var handler = handlers.FirstOrDefault(x => x.IsApplicable(msg));
 
             if(handler == null)

@@ -50,6 +50,6 @@ namespace Bolt.PubSub
         }
 
         public virtual bool IsApplicable(Message msg)
-            => string.Equals(msg.Type, typeof(T).Name, StringComparison.OrdinalIgnoreCase);
+            => string.Equals(msg.Type, MessageTypeNameProvider.Get<T>(), StringComparison.OrdinalIgnoreCase);
     }
 }

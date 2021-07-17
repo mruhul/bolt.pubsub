@@ -42,6 +42,15 @@ namespace Bolt.PubSub.RabbitMq.Subscribers
         {
             logger.LogTrace("Starting message subscriber");
 
+            var totalSettings = subscriberSettings?.Settings?.Length ?? 0;
+
+            if (totalSettings == 0)
+            {
+                logger.LogWarning("No subscriber settings provided.");
+
+                return Task.CompletedTask;
+            }
+
             var rmqSetup = rabbitMqSetups.FirstOrDefault(x => x.IsApplicable(subscriberSettings));
 
             if (rmqSetup == null) throw new Exception("No rabbitmq setup defined for current subscriber settings.");

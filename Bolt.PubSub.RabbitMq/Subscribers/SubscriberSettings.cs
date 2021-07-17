@@ -27,9 +27,6 @@ namespace Bolt.PubSub.RabbitMq.Subscribers
         /// EnableDeadLetterQueue value is false
         /// </summary>
         public int RequeueDelayInMs { get; set; }
-        /// <summary>
-        /// Prefix will be prepend with message type value for [blt-msg-type] header if defined.
-        /// </summary>
-        public string MessageTypePrefix { get; set; }
+        public string ImplicitHeaderPrefix { get; set; } = "blt-";
     }
 }
