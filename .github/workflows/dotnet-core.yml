@@ -1,0 +1,33 @@
+name: .NET Core
+
+on:
+  push:
+    branches: [ master ]
+    tags: release-**
+  pull_request:
+    branches: [ master ]
+
+jobs:
+         
+  build:
+    runs-on: ubuntu-latest
+    env:
+      PROJECT_NAME: Bolt.PubSub  
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 3.1.301
+      - name: Install dependencies
+        run: dotnet restore ./{{ env.PROJECT_NAME }}.sln
+      - name: Build
+        run: dotnet build ./{{ env.PROJECT_NAME }}.sln --configuration Release --no-restore
+      - name: Test
+        run: dotnet test ./{{ env.PROJECT_NAME }}.sln --no-restore --verbosity normal
+      - name: Pack
+        run: dotnet pack ./{{ env.PROJECT_NAME }}/{{ env.PROJECT_NAME }}.csproj -c Release --no-build --output ../nupkgs
+      - name: Publish
+        run: dotnet nuget push ../nupkgs/**.nupkg -s https://www.nuget.org/api/v2/package/ -k ${{ secrets.nugetkey }} --skip-duplicate
