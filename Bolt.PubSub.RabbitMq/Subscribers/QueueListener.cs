@@ -17,6 +17,7 @@ namespace Bolt.PubSub.RabbitMq.Subscribers
         private readonly IServiceProvider serviceProvider;
         private IModel channel;
         private readonly Dictionary<string, AsyncEventingBasicConsumer> consumers = new Dictionary<string, AsyncEventingBasicConsumer>();
+        private const int DefaultDelayInMs = 1 * 60 * 1000; // 1 Minute
 
         public QueueListener(RabbitMqConnection connection, 
             MessageReader messageReader,
@@ -76,7 +77,7 @@ namespace Bolt.PubSub.RabbitMq.Subscribers
             {
                 logger.LogError("No serializer found that support {contentType}", contentType);
 
-                await PublishToErrorExchange(evnt);
+                await PublishToErrorExchange(evnt, "SerializerNotFound", 5 * 60);
 
                 return;
             }
@@ -90,7 +91,7 @@ namespace Bolt.PubSub.RabbitMq.Subscribers
             {
                 logger.LogError("No handler found for {msgId} and {msgType} {tenant} {appId}", msg.Id, msg.Type, msg.Tenant, msg.AppId);
 
-                await PublishToErrorExchange(evnt);
+                await PublishToErrorExchange(evnt, $"NoHandlerApplicable", DefaultDelayInMs);
 
                 return;
             }
@@ -117,14 +118,14 @@ namespace Bolt.PubSub.RabbitMq.Subscribers
                 {
                     logger.LogWarning("Handler indicates there was a transient failure to process the messsage {msgId}", msg.Id);
 
-                    await Requeue(evnt);
+                    await Requeue(evnt, DefaultDelayInMs);
 
                     return;
                 }
 
                 logger.LogError("Handler indicates failure {status} to process the messsage {msgId}", rsp.Status, msg.Id);
 
-                await PublishToErrorExchange(evnt);
+                await PublishToErrorExchange(evnt, $"HandlerFailed {rsp.Status}", DefaultDelayInMs);
 
                 return;
             }
@@ -132,17 +133,26 @@ namespace Bolt.PubSub.RabbitMq.Subscribers
             {
                 logger.LogError(e, e.Message);
 
-                await PublishToErrorExchange(evnt);
+                await PublishToErrorExchange(evnt, e.Message, DefaultDelayInMs);
             }
         }
 
-        private async Task Requeue(BasicDeliverEventArgs evnt)
+        private async Task Requeue(BasicDeliverEventArgs evnt, int defaultDelayInMs)
         {
-            if (queueSettings.DelayOnErrorInMs > 0)
-            {
-                logger.LogTrace("Adding some delay {delayInMs} before requeue the message", queueSettings.DelayOnErrorInMs);
+            var delayInMs = queueSettings.RequeueDelayInMs > 0 ? queueSettings.RequeueDelayInMs : defaultDelayInMs;
 
-                await Task.Delay(queueSettings.DelayOnErrorInMs);
+            if (delayInMs > 0 )
+            {
+                if (evnt.Redelivered)
+                {
+                    logger.LogTrace("Increase delay in MS by 2 as the message is redlivered");
+
+                    delayInMs = delayInMs * 2;
+                }
+
+                logger.LogTrace("Adding some delay {delayInMs} before requeue the message", delayInMs);
+
+                await Task.Delay(delayInMs);
             }
 
             logger.LogTrace("Nack the message and ask to requeue");
@@ -152,16 +162,20 @@ namespace Bolt.PubSub.RabbitMq.Subscribers
             return;
         }
 
-        private Task PublishToErrorExchange(BasicDeliverEventArgs evnt)
+        private Task PublishToErrorExchange(BasicDeliverEventArgs evnt, string reason, int defaultDelayInMs)
         {
             if (queueSettings.ErrorExchangeName.IsEmpty())
             {
-                logger.LogTrace("Requeue the message as no error exchange defined.");
+                logger.LogTrace("Requeue the message {errReason} as no error exchange defined.", reason);
 
-                return Requeue(evnt);
+                return Requeue(evnt, defaultDelayInMs);
             };
 
-            logger.LogTrace("Publising message to error exchange {errorExchangeName}", queueSettings.ErrorExchangeName);
+            logger.LogTrace("Publising message to error exchange {errorExchangeName} {errorReason}", queueSettings.ErrorExchangeName, reason);
+
+            reason = reason == null ? null : reason.Length > 64 ? reason.Substring(64) : reason;
+
+            evnt.BasicProperties.SetHeader(HeaderNames.ErrorReason, reason);
 
             channel.BasicPublish(queueSettings.ErrorExchangeName, string.Empty, evnt.BasicProperties, evnt.Body);
 

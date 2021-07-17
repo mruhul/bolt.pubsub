@@ -11,6 +11,7 @@
         public const string Cid = "cid";
         public const string AppId = "app-id";
         public const string DeliveryCount = "delivery-count";
+        public const string ErrorReason = "err-reason";
     }
 
     public static class ContentTypeNames

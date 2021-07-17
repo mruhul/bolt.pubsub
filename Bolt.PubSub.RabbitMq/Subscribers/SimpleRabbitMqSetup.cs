@@ -15,7 +15,7 @@ namespace Bolt.PubSub.RabbitMq.Subscribers
 
         public bool IsApplicable(SubscriberSettings subscriberSettings)
         {
-            return subscriberSettings.EnableRetryQueue is false;
+            return true;
         }
 
         public QueueSettings[] Run(SubscriberSettings subscriberSettings)
@@ -74,7 +74,7 @@ namespace Bolt.PubSub.RabbitMq.Subscribers
                     QueueName = setting.QueueName,
                     ProcessCount = processCount,
                     PrefetchCount = setting.PrefetchCount,
-                    DelayOnErrorInMs = setting.DelayOnErrorInMs,
+                    RequeueDelayInMs = setting.RequeueDelayInMs,
                 });
             }
 

@@ -16,6 +16,6 @@ namespace Bolt.PubSub.RabbitMq.Subscribers
         public string RetryExchangeName { get; init; }
         public int ProcessCount { get; init; }
         public int? PrefetchCount { get; init; }
-        public int DelayOnErrorInMs { get; set; }
+        public int RequeueDelayInMs { get; set; }
     }
 }
