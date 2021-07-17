@@ -15,7 +15,7 @@ namespace Bolt.PubSub.RabbitMq.Subscribers
         private IServiceProvider serviceProvider;
         private ILogger logger;
         private const int DefaultDelayInMs = 1 * 60 * 1000; // 1 Minute
-
+        private MessageReader messageReader;
         
         public void Listen(IServiceProvider serviceProvider, QueueSettings queueSettings)
         {
@@ -23,6 +23,7 @@ namespace Bolt.PubSub.RabbitMq.Subscribers
             this.queueSettings = queueSettings;
             this.serviceProvider = serviceProvider;
             this.logger = serviceProvider.GetRequiredService<ILogger<RabbitMqLogger>>();
+            this.messageReader = serviceProvider.GetRequiredService<MessageReader>();
 
             var consumer = new AsyncEventingBasicConsumer(channel);
 
