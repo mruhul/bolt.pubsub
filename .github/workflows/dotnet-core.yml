@@ -22,7 +22,7 @@ jobs:
         with:
           dotnet-version: 3.1.301
       - name: Install dependencies
-        run: dotnet restore ./{{ env.PROJECT_NAME }}.sln
+        run: dotnet restore ./Bolt.PubSub.sln
       - name: Build
         run: dotnet build ./{{ env.PROJECT_NAME }}.sln --configuration Release --no-restore
       - name: Test
