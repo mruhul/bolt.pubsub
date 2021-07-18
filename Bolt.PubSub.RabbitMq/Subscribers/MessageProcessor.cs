@@ -57,17 +57,17 @@ namespace Bolt.PubSub.RabbitMq.Subscribers
             }
         }
 
-        private Task NotifyUsageData(BasicDeliverEventArgs evnt, 
+        private async Task NotifyUsageData(BasicDeliverEventArgs evnt, 
             Message msg,
             QueueSettings queueSettings,
             UsageDataType usageDataType,
             Dictionary<string, object> data)
         {
-            if (usageDataCollectors == null || usageDataCollectors.Any() is false) return Task.CompletedTask;
+            if (usageDataCollectors == null || usageDataCollectors.Any() is false) return;
 
             var usageData = new UsageData 
             {
-                MessageId = msg.Id.ToString(),
+                MessageId = msg.Id?.ToString(),
                 MessageType = msg.Type,
                 AppId = msg.AppId,
                 QueueName = queueSettings.QueueName,
@@ -75,7 +75,14 @@ namespace Bolt.PubSub.RabbitMq.Subscribers
                 Data = data ?? new Dictionary<string, object>()
             };
 
-            return Task.WhenAll(usageDataCollectors.Select(x => x.Notify(usageData)));
+            try
+            {
+                await Task.WhenAll(usageDataCollectors.Select(x => x.Notify(usageData)));
+            }
+            catch(Exception e)
+            {
+                logger.LogError(e, "Failed to publish usage data with {errMsg}", e.Message);
+            }
         }
 
         private async Task<HandlerResponse> ProcessInternal(BasicDeliverEventArgs evnt, Message msg, QueueSettings queueSettings)
