@@ -58,6 +58,7 @@ namespace Bolt.PubSub.RabbitMq
             services.TryAddEnumerable(ServiceDescriptor.Transient<IRabbitMqSetup, SimpleRabbitMqSetup>());
             services.TryAddTransient<IMessageSubscriber, MessageSubscriber>();
             services.TryAddTransient<QueueListener>();
+            services.TryAddTransient<MessageProcessor>();
             services.TryAddTransient<MessageReader>();
 
             if(options.RunAsHostedService)
