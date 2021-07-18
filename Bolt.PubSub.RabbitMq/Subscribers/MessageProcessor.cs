@@ -63,7 +63,7 @@ namespace Bolt.PubSub.RabbitMq.Subscribers
             var usageData = new UsageData 
             {
                 MessageId = evnt.BasicProperties.MessageId,
-                MessageType = evnt.BasicProperties.TryReadHeader(HeaderNames.MessageType),
+                MessageType = evnt.BasicProperties.TryReadHeader($"{queueSettings.ImplicitHeaderPrefix}{HeaderNames.MessageType}"),
                 QueueName = queueSettings.QueueName,
                 Type = usageDataType,
                 Data = data ?? new Dictionary<string, object>()
