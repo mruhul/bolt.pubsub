@@ -33,9 +33,11 @@ namespace Bolt.PubSub.RabbitMq.Subscribers
 
         public async Task Process(IModel channel, BasicDeliverEventArgs evnt, QueueSettings queueSettings)
         {
-            await NotifyUsageData(evnt, queueSettings, UsageDataType.MessageReceived, null);
+            var msg = messageReader.Read(evnt, queueSettings);
 
-            var rsp = await ProcessInternal(evnt, queueSettings);
+            await NotifyUsageData(evnt, msg, queueSettings, UsageDataType.MessageReceived, null);
+
+            var rsp = await ProcessInternal(evnt, msg, queueSettings);
 
             if(rsp.Status == HandlerStatusCode.Success)
             {
@@ -45,25 +47,29 @@ namespace Bolt.PubSub.RabbitMq.Subscribers
             {
                 await Requeue(channel, evnt, queueSettings, DefaultDelayInMs);
 
-                await NotifyUsageData(evnt, queueSettings, UsageDataType.MessageTransientError, null);
+                await NotifyUsageData(evnt, msg, queueSettings, UsageDataType.MessageTransientError, null);
             }
             else
             {
                 await PublishToErrorExchange(channel, evnt, queueSettings, rsp.StatusReason, DefaultDelayInMs);
 
-                await NotifyUsageData(evnt, queueSettings, UsageDataType.MessageFatalError, null);
+                await NotifyUsageData(evnt, msg, queueSettings, UsageDataType.MessageFatalError, null);
             }
         }
 
         private Task NotifyUsageData(BasicDeliverEventArgs evnt, 
+            Message msg,
             QueueSettings queueSettings,
             UsageDataType usageDataType,
             Dictionary<string, object> data)
         {
+            if (usageDataCollectors == null || usageDataCollectors.Any() is false) return Task.CompletedTask;
+
             var usageData = new UsageData 
             {
-                MessageId = evnt.BasicProperties.MessageId,
-                MessageType = evnt.BasicProperties.TryReadHeader($"{queueSettings.ImplicitHeaderPrefix}{HeaderNames.MessageType}"),
+                MessageId = msg.Id.ToString(),
+                MessageType = msg.Type,
+                AppId = msg.AppId,
                 QueueName = queueSettings.QueueName,
                 Type = usageDataType,
                 Data = data ?? new Dictionary<string, object>()
@@ -72,7 +78,7 @@ namespace Bolt.PubSub.RabbitMq.Subscribers
             return Task.WhenAll(usageDataCollectors.Select(x => x.Notify(usageData)));
         }
 
-        private async Task<HandlerResponse> ProcessInternal(BasicDeliverEventArgs evnt, QueueSettings queueSettings)
+        private async Task<HandlerResponse> ProcessInternal(BasicDeliverEventArgs evnt, Message msg, QueueSettings queueSettings)
         {
             var contentType = evnt.BasicProperties.ContentType;
 
@@ -84,8 +90,6 @@ namespace Bolt.PubSub.RabbitMq.Subscribers
 
                 return new HandlerResponse { Status = HandlerStatusCode.FatalError, StatusReason = "SerializerNotFound" };
             }
-
-            var msg = messageReader.Read(evnt, queueSettings);
 
             var handler = handlers.FirstOrDefault(x => x.IsApplicable(msg));
 
@@ -111,7 +115,7 @@ namespace Bolt.PubSub.RabbitMq.Subscribers
 
                 if (rsp.Status == HandlerStatusCode.Success)
                 {
-                    await NotifyUsageData(evnt, queueSettings, UsageDataType.MessageProcessed, new Dictionary<string, object> 
+                    await NotifyUsageData(evnt, msg, queueSettings, UsageDataType.MessageProcessed, new Dictionary<string, object> 
                     {
                         [UsageDataPropertyNames.TimeTakenInMs] = sw.ElapsedMilliseconds
                     });

@@ -16,6 +16,8 @@ namespace Bolt.PubSub
         public string QueueName { get; init; }
         public string MessageType { get; init; }
         public string MessageId { get; init; }
+        public string AppId { get; init; }
+
         public Dictionary<string,object> Data { get; init; }
         public UsageDataType Type { get; init; }
     }

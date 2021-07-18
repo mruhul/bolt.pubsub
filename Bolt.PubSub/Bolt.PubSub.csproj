@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
     <Authors>Mohammad Ruhul Amin</Authors>
-    <Version>0.0.1-beta07</Version>
+    <Version>0.0.1-beta08</Version>
     <RepositoryUrl>https://github.com/mruhul/bolt.pubsub</RepositoryUrl>
     <Description>A abstraction lib that define generic pubsub</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
