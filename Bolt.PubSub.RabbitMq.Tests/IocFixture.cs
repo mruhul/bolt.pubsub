@@ -37,6 +37,7 @@ namespace Bolt.PubSub.RabbitMq.Tests
             sc.AddScoped(c => Substitute.For<IUniqueId>());
 
             sc.AddRabbitMqPublisher(config);
+            sc.AddRabbitMqSubscriber(config);
 
             modfify?.Invoke(sc);
 

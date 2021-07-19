@@ -182,7 +182,7 @@ namespace Bolt.PubSub.RabbitMq.Subscribers
 
             reason = reason == null ? null : reason.Length > 64 ? reason.Substring(64) : reason;
 
-            evnt.BasicProperties.SetHeader(HeaderNames.ErrorReason, reason);
+            evnt.BasicProperties.SetHeader($"{queueSettings.ImplicitHeaderPrefix}{HeaderNames.ErrorReason}", reason);
 
             channel.BasicPublish(queueSettings.ErrorExchangeName, string.Empty, evnt.BasicProperties, evnt.Body);
 
