@@ -43,21 +43,22 @@ namespace Bolt.PubSub.RabbitMq.Publishers
 
             using var _ = logger.BeginScope("{msgId}", msgId);
 
+            var msgType = msg.Type.EmptyAlternative(MessageTypeNameProvider.Get<T>());
+
             if (filters != null)
             {
-                foreach(var filter in filters)
+                foreach (var filter in filters)
                 {
                     if (logger.IsEnabled(LogLevel.Trace))
                     {
                         logger.LogTrace("Start applying filter {filterType}", filter.GetType());
                     }
 
-                    msg = filter.Filter(msg);
+                    msg = filter.Filter(msg, msgType);
                 }
             }
 
             var appId = msg.AppId.EmptyAlternative(settings.AppId.EmptyAlternative("na"));
-            var msgType = MessageTypeNameProvider.Get<T>();
             var contentType = settings.ContentType.EmptyAlternative(ContentTypeNames.Json);
             var correlationId = msg.CorrelationId.IsEmpty() ? uniqueId.New().ToString() : msg.CorrelationId;
             var version = msg.Version == 0 ? "1" : msg.Version.ToString();
@@ -69,6 +70,7 @@ namespace Bolt.PubSub.RabbitMq.Publishers
             AddHeaderIfNotSet(msg, HeaderNames.Version, version, settings.ImplicitHeaderPrefix);
             AddHeaderIfNotSet(msg, msgType, "1", string.Empty);
             AddHeaderIfNotSet(msg, HeaderNames.PublishedAt, clock.UtcNow.ToUtcFormat(), settings.ImplicitHeaderPrefix);
+
 
             var serializer = serializers.FirstOrDefault(s => s.IsApplicable(settings.ContentType.EmptyAlternative(ContentTypeNames.Json)));
 
