@@ -55,7 +55,7 @@ namespace Bolt.PubSub.RabbitMq.Subscribers
 
                 if(exchanges.ContainsKey(setting.ExchangeName) is false)
                 {
-                    channel.ExchangeDeclare(setting.ExchangeName, setting.ExchangeType, true, false, null);
+                    channel.ExchangeDeclare(setting.ExchangeName, setting.ExchangeType.EmptyAlternative(RabbitMQ.Client.ExchangeType.Headers), true, false, null);
 
                     exchanges.Add(setting.ExchangeName, setting.ExchangeName);
                 }
@@ -70,15 +70,22 @@ namespace Bolt.PubSub.RabbitMq.Subscribers
 
                 var errorExchange = string.Empty;
                 var processCount = setting.ProcessCount <= 0 ? 1 : setting.ProcessCount;
+                var errorQueue = string.Empty;
 
                 if(enableDeadLetterQueue)
                 {
                     errorExchange = $"{setting.ExchangeName}.DX";
-                    var errorQueue = $"{setting.QueueName}.DQ";
+                    errorQueue = $"{setting.QueueName}.DQ";
 
-                    channel.ExchangeDeclare(errorExchange, "fanout", true, false, null);
+                    if(exchanges.ContainsKey(errorExchange) is false)
+                    {
+                        channel.ExchangeDeclare(errorExchange, RabbitMQ.Client.ExchangeType.Direct, true, false, null);
+
+                        exchanges.Add(errorExchange, errorExchange);
+                    }
+
                     channel.QueueDeclare(errorQueue, true, false, false, null);
-                    channel.QueueBind(errorQueue, errorExchange, string.Empty, null);                    
+                    channel.QueueBind(errorQueue, errorExchange, errorQueue, null);                    
                 }
 
                 result.Add(new QueueSettings
@@ -86,6 +93,7 @@ namespace Bolt.PubSub.RabbitMq.Subscribers
                     ExchangeName = setting.ExchangeName,
                     ErrorExchangeName = errorExchange,
                     QueueName = setting.QueueName,
+                    ErrorQueueName = errorQueue,
                     ProcessCount = processCount,
                     PrefetchCount = setting.PrefetchCount,
                     RequeueDelayInMs = setting.RequeueDelayInMs,
