@@ -93,7 +93,6 @@ namespace Bolt.PubSub.RabbitMq.Subscribers
                     ExchangeName = setting.ExchangeName,
                     ErrorExchangeName = errorExchange,
                     QueueName = setting.QueueName,
-                    ErrorQueueName = errorQueue,
                     ProcessCount = processCount,
                     PrefetchCount = setting.PrefetchCount,
                     RequeueDelayInMs = setting.RequeueDelayInMs,

@@ -13,7 +13,6 @@ namespace Bolt.PubSub.RabbitMq.Subscribers
         public string ExchangeName { get; init; }
         public string QueueName { get; init; }
         public string ErrorExchangeName { get; init; }
-        public string ErrorQueueName { get; init; }
         public string RetryExchangeName { get; init; }
         public int ProcessCount { get; init; }
         public int? PrefetchCount { get; init; }

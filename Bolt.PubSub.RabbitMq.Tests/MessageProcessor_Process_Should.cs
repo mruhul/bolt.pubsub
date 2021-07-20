@@ -31,15 +31,15 @@ namespace Bolt.PubSub.RabbitMq.Tests
             };
             var queueSetting = new QueueSettings
             {
-                ErrorExchangeName = "error-exchange",
-                ErrorQueueName = "error-queue"
+                QueueName = "queuename",
+                ErrorExchangeName = "error-exchange"
             };
 
             await sut.Process(fakeChannel, basicDeliveryEventArgs, queueSetting);
 
             fakeChannel.Received(1).BasicPublish(
                 queueSetting.ErrorExchangeName,
-                "error-queue",
+                "queuename",
                 basicDeliveryEventArgs.BasicProperties,
                 Arg.Any<ReadOnlyMemory<byte>>());
 

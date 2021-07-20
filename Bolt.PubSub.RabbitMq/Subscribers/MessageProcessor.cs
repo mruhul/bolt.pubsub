@@ -184,7 +184,7 @@ namespace Bolt.PubSub.RabbitMq.Subscribers
 
             evnt.BasicProperties.SetHeader($"{queueSettings.ImplicitHeaderPrefix}{HeaderNames.ErrorReason}", reason);
 
-            channel.BasicPublish(queueSettings.ErrorExchangeName, queueSettings.ErrorQueueName, evnt.BasicProperties, evnt.Body);
+            channel.BasicPublish(queueSettings.ErrorExchangeName, queueSettings.QueueName, evnt.BasicProperties, evnt.Body);
 
             logger.LogTrace("Acknowledge the message so that can be removed from queue.");
 
