@@ -98,7 +98,7 @@ namespace Bolt.PubSub.RabbitMq.Subscribers
                 return new HandlerResponse { Status = HandlerStatusCode.FatalError, StatusReason = "SerializerNotFound" };
             }
 
-            var handler = handlers.FirstOrDefault(x => x.IsApplicable(msg));
+            var handler = handlers.FirstOrDefault(x => x.IsApplicable(queueSettings.QueueName, msg));
 
             if (handler == null)
             {

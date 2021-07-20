@@ -40,6 +40,7 @@ namespace Bolt.PubSub.RabbitMq.Publishers
 
             var properties = channel.CreateBasicProperties();
 
+            properties.Type = dto.Type;
             properties.MessageId = dto.MessageId.ToString();
             properties.CorrelationId = dto.CorrelationId;
             properties.ContentType = dto.ContentType;
@@ -80,6 +81,7 @@ namespace Bolt.PubSub.RabbitMq.Publishers
         public string CorrelationId { get; init; }
         public Dictionary<string, string> Headers { get; init; }
         public string ContentType { get; init; }
+        public string Type { get; init; }
         public string Exchange { get; init; }
         public string RoutingKey { get; init; }
         public byte DeliveryMode { get; init; } = 2;

@@ -6,7 +6,7 @@ namespace Bolt.PubSub
     public interface IMessageHandler
     {
         Task<HandlerResponse> Handle(Message msg, ReadOnlySpan<byte> content, IMessageSerializer serializer);
-        bool IsApplicable(Message msg);
+        bool IsApplicable(string queueName, Message msg);
     }
 
     public record HandlerResponse
@@ -49,7 +49,14 @@ namespace Bolt.PubSub
             });
         }
 
-        public virtual bool IsApplicable(Message msg)
-            => string.Equals(msg.Type, MessageTypeNameProvider.Get<T>(), StringComparison.OrdinalIgnoreCase);
+        /// <summary>
+        /// Provide the queuename that you like to scope your handler to listen for message. Set empty or null if you
+        /// don't need any scope for the message to a specific queue.
+        /// </summary>
+        protected abstract string LinkedQueueName { get; }
+
+        public virtual bool IsApplicable(string queueName, Message msg)
+            => (string.IsNullOrWhiteSpace(LinkedQueueName) || string.Equals(LinkedQueueName, queueName, StringComparison.OrdinalIgnoreCase)) 
+            && string.Equals(msg.Type, MessageTypeNameProvider.Get<T>(), StringComparison.OrdinalIgnoreCase);
     }
 }

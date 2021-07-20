@@ -89,6 +89,7 @@ namespace Bolt.PubSub.RabbitMq.Publishers
                 ContentType = contentType,
                 CorrelationId = msg.CorrelationId,
                 Exchange = settings.ExchangeName,
+                Type = msg.Type,
                 Headers = msg.Headers,
                 ExpiryInSeconds = settings.DefaultTTLInSeconds,
                 MessageId = msg.Id.Value,
