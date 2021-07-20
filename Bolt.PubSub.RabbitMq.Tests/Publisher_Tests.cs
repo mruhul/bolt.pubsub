@@ -21,7 +21,7 @@ namespace Bolt.PubSub.RabbitMq.Tests
             using var scope = CreateScope(sc => {
                 sc.AddTransient(sc => {
                     var filter = Substitute.For<IMessageFilter>();
-                    filter.Filter(Arg.Any<Message<SampleEvent>>()).Returns(c => {
+                    filter.Filter(Arg.Any<Message<SampleEvent>>(), Arg.Any<string>()).Returns(c => {
                         var arg = c.Arg<Message<SampleEvent>>();
                         arg.Headers.Add("custom-header","custom-value");
                         return arg with { AppId = "new-app-id", CorrelationId = "cid" };
