@@ -39,9 +39,16 @@ namespace Bolt.PubSub.RabbitMq.Publishers
             if (settings.ExchangeName.IsEmpty()) 
                 throw new Exception("Exchange name cannot be empty. Make sure you provide an exchange name in settings.");
 
-            var msgId = msg.Id ?? uniqueId.New();
+            if(msg.Id == null || msg.Headers == null)
+            {
+                msg = msg with
+                {
+                    Id = msg.Id.HasValue ? msg.Id : uniqueId.New(),
+                    Headers = msg.Headers == null ? new Dictionary<string, string>() : msg.Headers, 
+                };
+            }
 
-            using var _ = logger.BeginScope("{msgId}", msgId);
+            using var _ = logger.BeginScope("{msgId}", msg.Id);
 
             var msgType = msg.Type.EmptyAlternative(MessageTypeNameProvider.Get<T>());
 
@@ -85,11 +92,11 @@ namespace Bolt.PubSub.RabbitMq.Publishers
                 Exchange = settings.ExchangeName,
                 Headers = msg.Headers,
                 ExpiryInSeconds = settings.DefaultTTLInSeconds,
-                MessageId = msgId,
+                MessageId = msg.Id.Value,
                 RoutingKey = $"{appId}.{msgType}.{version}"
             });
 
-            return Task.FromResult(msgId);
+            return Task.FromResult(msg.Id.Value);
         }
 
         private static void AddHeaderIfNotSet<T>(Message<T> msg, string key, string value, string keyPrefix)
