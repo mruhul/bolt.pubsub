@@ -96,7 +96,7 @@ namespace Bolt.PubSub.RabbitMq.Publishers
                 RoutingKey = RoutingKeyRequired() ? $"{appId}.{msgType}.{version}" : string.Empty
             });
 
-            logger.LogTrace("Message {msgId} published successfully.", msg.Id);
+            logger.LogTrace("Message with {msgId} {msgType} {appId} {version} published successfully.", msg.Id, msgType, appId, version);
 
             return Task.FromResult(msg.Id.Value);
         }
