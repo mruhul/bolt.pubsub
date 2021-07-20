@@ -21,8 +21,7 @@ namespace Bolt.PubSub.RabbitMq.Publishers
             IEnumerable<IMessageFilter> filters,         
             IEnumerable<IMessageSerializer> serializers,
             IUniqueId uniqueId,
-            ISystemClock clock,
-            
+            ISystemClock clock,            
             ILogger<RabbitMqLogger> logger)
         {
             this.publisherWrapper = publisherWrapper;
@@ -93,10 +92,18 @@ namespace Bolt.PubSub.RabbitMq.Publishers
                 Headers = msg.Headers,
                 ExpiryInSeconds = settings.DefaultTTLInSeconds,
                 MessageId = msg.Id.Value,
-                RoutingKey = $"{appId}.{msgType}.{version}"
+                RoutingKey = RoutingKeyRequired() ? $"{appId}.{msgType}.{version}" : string.Empty
             });
 
+            logger.LogTrace("Message {msgId} published successfully.", msg.Id);
+
             return Task.FromResult(msg.Id.Value);
+        }
+
+        private bool RoutingKeyRequired()
+        {
+            return !(settings.ExchangeType.IsSame(RabbitMQ.Client.ExchangeType.Direct)
+                || settings.ExchangeType.IsSame(RabbitMQ.Client.ExchangeType.Topic));
         }
 
         private static void AddHeaderIfNotSet<T>(Message<T> msg, string key, string value, string keyPrefix)

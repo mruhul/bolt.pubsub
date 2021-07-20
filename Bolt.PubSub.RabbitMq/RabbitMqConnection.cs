@@ -37,7 +37,7 @@ namespace Bolt.PubSub.RabbitMq
 
             if (settings.SkipCreateExchange is true || settings.ExchangeName.IsEmpty()) return con;
 
-            var exchangeType = settings.ExchangeType.EmptyAlternative("headers");
+            var exchangeType = settings.ExchangeType.EmptyAlternative(RabbitMQ.Client.ExchangeType.Headers);
 
             logger.LogTrace("Start creating {exchangeName} of {exchangeType}.", settings.ExchangeName, exchangeType);
 
