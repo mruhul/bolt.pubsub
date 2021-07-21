@@ -28,7 +28,7 @@ You also need to define an instance of IConfugration and pass that to `AddRabbit
   services.AddRabbitMqPublisher(configuration, opt);
 ```
 
-- ** Define settings in `appsettings.json`. The section name depends on what you set during ioc setup. Default section name is `Bolt:PubSub:RabbitMq`.
+- **Define settings in `appsettings.json`. The section name depends on what you set during ioc setup. Default section name is `Bolt:PubSub:RabbitMq`.**
 
 ```
   Bolt: {
@@ -44,7 +44,7 @@ You also need to define an instance of IConfugration and pass that to `AddRabbit
     }
   }
 ```
-  - Now you can inject IMessagePublisher in your class and start publishing message
+  - **Now you can inject IMessagePublisher in your class and start publishing message**
 
 ```
   public class OrderService
@@ -86,6 +86,47 @@ You also need to define an instance of IConfugration and pass that to `AddRabbit
     }
   }
 ```
+## How to subscribe for RabbitMq message
 
-## How the settings looks l 
+- **First setup the library in your IOC**
 
+
+ ```
+  services.AddRabbitMqSubscriber(configuration);
+ ```
+
+You also need to define an instance of IConfugration and pass that to `AddRabbitMqSubscriber` method. By default the lib try to load settings from `Bolt:PubSub:RabbitMq` section. But you can change that if you need by defining this in options as below:
+
+```
+  var opt = new RabbitMqSubscriberOptions
+  {
+    ConfigSectionName = "App:RabbitMq"
+  }
+
+  services.AddRabbitMqSubscriber(configuration, opt);
+```
+
+- **Define settings in `appsettings.json`. The section name depends on what you set during ioc setup. Default section name is `Bolt:PubSub:RabbitMq`.**
+
+```
+  Bolt: {
+    "PubSub": {
+      "RabbitMq": {
+        "ConnectionString": "<your connection string>",
+        "ExchangeName": "<name of the exchange>",
+        "EnableDeadLetterQueue": false,
+        "Settings": [
+          {
+            "ExchangeName": "<exchange your queue need to bind>",
+            "QueueName": "<queuename you like to listen>",
+            "ProcessCount": 1, // number of consumer you like to create
+            "RoutingKey": null, // use to define binding with exchange if provided,
+            "PrefetchCount": null, // if you like to prefetch more than 1 msg
+            "ImplicitHeaderPrefix": "blt-",
+            "RequeueDelayInMs": 60000, // 1 minute
+          }
+        ]
+      }
+    }
+  }
+```

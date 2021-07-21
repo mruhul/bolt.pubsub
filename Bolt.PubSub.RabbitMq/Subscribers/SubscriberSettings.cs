@@ -16,7 +16,6 @@ namespace Bolt.PubSub.RabbitMq.Subscribers
         public string ExchangeName { get; set; }
         public string ExchangeType { get; set; } = "headers";
         public string QueueName { get; set; }
-        public int ListenersCount { get; set; } = 1;
         public string RoutingKey { get; set; }
         public int ProcessCount { get; set; } = 2;
         public int? PrefetchCount { get; set; }
