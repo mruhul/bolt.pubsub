@@ -102,7 +102,12 @@ namespace Bolt.PubSub.RabbitMq.Subscribers
 
             if (handler == null)
             {
-                logger.LogError("No handler found for {msgId} and {msgType} {tenant} {appId}", msg.Id, msg.Type, msg.Tenant, msg.AppId);
+                logger.LogError("No handler found for {msgId} with {msgType} {tenant} {appId} for {queueName}", 
+                    msg.Id, 
+                    msg.Type, 
+                    msg.Tenant, 
+                    msg.AppId, 
+                    queueSettings.QueueName);
 
                 return new HandlerResponse { Status = HandlerStatusCode.FatalError, StatusReason = "NoHandlerApplicable" };
             }

@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
     <Authors>Mohammad Ruhul Amin</Authors>
-    <Version>0.0.1-rc09</Version>
+    <Version>0.0.1-rc10</Version>
     <RepositoryUrl>https://github.com/mruhul/bolt.pubsub</RepositoryUrl>
     <Description>Rabbitmq implementation pubsub</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
