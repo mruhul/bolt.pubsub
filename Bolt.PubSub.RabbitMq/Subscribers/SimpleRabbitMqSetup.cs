@@ -70,12 +70,11 @@ namespace Bolt.PubSub.RabbitMq.Subscribers
 
                 var errorExchange = string.Empty;
                 var processCount = setting.ProcessCount <= 0 ? 1 : setting.ProcessCount;
-                var errorQueue = string.Empty;
-
+                
                 if(enableDeadLetterQueue)
                 {
                     errorExchange = $"{setting.ExchangeName}.DX";
-                    errorQueue = $"{setting.QueueName}.DQ";
+                    var errorQueue = $"{setting.QueueName}.DQ";
 
                     if(exchanges.ContainsKey(errorExchange) is false)
                     {
@@ -85,7 +84,7 @@ namespace Bolt.PubSub.RabbitMq.Subscribers
                     }
 
                     channel.QueueDeclare(errorQueue, true, false, false, null);
-                    channel.QueueBind(errorQueue, errorExchange, errorQueue, null);                    
+                    channel.QueueBind(errorQueue, errorExchange, setting.QueueName, null);                    
                 }
 
                 result.Add(new QueueSettings
