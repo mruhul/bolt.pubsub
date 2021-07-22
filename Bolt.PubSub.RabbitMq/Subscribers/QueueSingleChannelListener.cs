@@ -38,9 +38,13 @@ namespace Bolt.PubSub.RabbitMq.Subscribers
 
         private async Task Consumer_Received(object sender, BasicDeliverEventArgs evnt)
         {
-            using var _ = logger.BeginScope("{traceId}", evnt.BasicProperties.CorrelationId ?? Guid.NewGuid().ToString());
+            using var _ = logger.BeginScope("{traceId}{queueName}{msgId}{msgType}", 
+                evnt.BasicProperties.CorrelationId ?? Guid.NewGuid().ToString(),
+                queueSettings.QueueName,
+                evnt.BasicProperties.MessageId,
+                evnt.BasicProperties.Type);
 
-            logger.LogTrace("Message recieved with {msgId}", evnt.BasicProperties.MessageId);
+            logger.LogTrace("New message recieved");
 
             using var scope = serviceProvider.CreateScope();
 
